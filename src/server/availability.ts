@@ -16,6 +16,7 @@ export interface AvailableStaff {
   name: string;
   title?: string;
   avatarUrl?: string | null;
+  gender?: string | null;
 }
 
 export interface TimeSlot {
@@ -112,13 +113,14 @@ export async function calculateAvailableSlots(params: {
   const activeStaffOnDate = new Map<string, AvailableStaff>();
 
   for (const sId of candidateStaffIds) {
-    // Fetch staff info including title and avatar
+    // Fetch staff info including title, avatar, and gender
     const [staffInfo] = await db
       .select({
         id: staffProfiles.id,
         name: users.name,
         title: staffProfiles.title,
         avatarUrl: users.avatarUrl,
+        gender: users.gender,
       })
       .from(staffProfiles)
       .innerJoin(users, eq(staffProfiles.userId, users.id))
@@ -208,6 +210,7 @@ export async function calculateAvailableSlots(params: {
               name: staffInfo.name,
               title: staffInfo.title,
               avatarUrl: staffInfo.avatarUrl,
+              gender: staffInfo.gender,
             };
 
             activeStaffOnDate.set(sId, staffObj);

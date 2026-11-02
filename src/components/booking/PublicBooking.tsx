@@ -16,6 +16,7 @@ import {
 import { Service, StaffProfile, TimeSlot, AvailableStaff, BusinessSettings } from '../../types/index.ts';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { useToast } from '../ui/Toast.tsx';
+import { getEffectiveAvatarUrl, getDefaultAvatarByGender } from '../../utils/avatar.ts';
 
 interface PublicBookingProps {
   onViewAppointments?: () => void;
@@ -672,17 +673,14 @@ export const PublicBooking: React.FC<PublicBookingProps> = ({ onViewAppointments
                         >
                           <div className="flex items-center gap-3 min-w-0 pr-2">
                             <div className="w-9 h-9 rounded-full bg-slate-100 overflow-hidden shrink-0 border border-slate-200">
-                              {stf.avatarUrl ? (
-                                <img
-                                  src={stf.avatarUrl}
-                                  alt={stf.name || 'Practitioner'}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center font-mono text-[10px] font-bold text-slate-700">
-                                  {stf.name ? stf.name.slice(0, 2).toUpperCase() : 'ST'}
-                                </div>
-                              )}
+                              <img
+                                src={getEffectiveAvatarUrl(stf.avatarUrl, stf.gender, stf.name)}
+                                alt={stf.name || 'Practitioner'}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.src = getDefaultAvatarByGender(stf.gender, stf.name);
+                                }}
+                              />
                             </div>
                             <div className="truncate">
                               <h4 className="font-semibold text-slate-900 text-sm truncate">

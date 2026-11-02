@@ -7,6 +7,7 @@ export interface User {
   phone?: string | null;
   role: UserRole;
   avatarUrl?: string | null;
+  gender?: string | null;
   staffProfile?: StaffProfile | null;
 }
 
@@ -21,6 +22,7 @@ export interface StaffProfile {
   email?: string;
   phone?: string | null;
   avatarUrl?: string | null;
+  gender?: string | null;
   services?: { id: string; name: string }[];
   upcomingAppointmentsCount?: number;
 }
@@ -83,6 +85,7 @@ export interface AvailableStaff {
   name: string;
   title?: string;
   avatarUrl?: string | null;
+  gender?: string | null;
 }
 
 export interface TimeSlot {
@@ -101,6 +104,7 @@ export interface SpecialistDayStatus {
   title: string;
   email: string;
   avatarUrl?: string | null;
+  gender?: string | null;
   dayOfWeek: number;
   isWorkingDay: boolean;
   workingHours?: string;

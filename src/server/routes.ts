@@ -220,6 +220,7 @@ router.get('/staff', async (req: Request, res: Response) => {
         email: users.email,
         phone: users.phone,
         avatarUrl: users.avatarUrl,
+        gender: users.gender,
         title: staffProfiles.title,
         bio: staffProfiles.bio,
         timezone: staffProfiles.timezone,
@@ -275,7 +276,7 @@ router.get('/staff', async (req: Request, res: Response) => {
 // Create new staff member (Admin only)
 router.post('/staff', requireRole(['ADMIN']), async (req: AuthRequest, res: Response) => {
   try {
-    const { name, email, phone, title, bio, timezone = 'America/New_York', serviceIds = [] } = req.body;
+    const { name, email, phone, title, bio, avatarUrl, gender, timezone = 'America/New_York', serviceIds = [] } = req.body;
     if (!name || !email) {
       return res.status(400).json({
         success: false,
@@ -292,6 +293,8 @@ router.post('/staff', requireRole(['ADMIN']), async (req: AuthRequest, res: Resp
       name: name.trim(),
       email: email.toLowerCase().trim(),
       phone: phone?.trim() || null,
+      avatarUrl: avatarUrl?.trim() || null,
+      gender: gender?.trim() || null,
       role: 'STAFF',
     });
 
@@ -328,7 +331,7 @@ router.post('/staff', requireRole(['ADMIN']), async (req: AuthRequest, res: Resp
       }
     }
 
-    return res.status(201).json({ success: true, data: { ...profile, userId, name, email } });
+    return res.status(201).json({ success: true, data: { ...profile, userId, name, email, avatarUrl, gender } });
   } catch (error: any) {
     return res.status(500).json({ success: false, error: { message: error.message } });
   }
@@ -338,7 +341,7 @@ router.post('/staff', requireRole(['ADMIN']), async (req: AuthRequest, res: Resp
 router.patch('/staff/:id', async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { title, bio, timezone, isActive, serviceIds, name, phone } = req.body;
+    const { title, bio, timezone, isActive, serviceIds, name, phone, avatarUrl, gender } = req.body;
 
     const [staff] = await db.select().from(staffProfiles).where(eq(staffProfiles.id, id));
     if (!staff) {
@@ -362,15 +365,20 @@ router.patch('/staff/:id', async (req: AuthRequest, res: Response) => {
       .where(eq(staffProfiles.id, id))
       .returning();
 
-    // Update user record name / phone if requested
-    if (name || phone !== undefined) {
-      await db
-        .update(users)
-        .set({
-          ...(name ? { name: name.trim() } : {}),
-          ...(phone !== undefined ? { phone: phone?.trim() || null } : {}),
-        })
-        .where(eq(users.id, staff.userId));
+    // Update user record name / phone / avatarUrl / gender if requested
+    if (name !== undefined || phone !== undefined || avatarUrl !== undefined || gender !== undefined) {
+      const userUpdatePayload: any = {};
+      if (name !== undefined) userUpdatePayload.name = name.trim();
+      if (phone !== undefined) userUpdatePayload.phone = phone?.trim() || null;
+      if (avatarUrl !== undefined) userUpdatePayload.avatarUrl = avatarUrl;
+      if (gender !== undefined) userUpdatePayload.gender = gender;
+
+      if (Object.keys(userUpdatePayload).length > 0) {
+        await db
+          .update(users)
+          .set(userUpdatePayload)
+          .where(eq(users.id, staff.userId));
+      }
     }
 
     // Update assigned services if provided (Admin only)
@@ -539,6 +547,7 @@ router.get('/admin/daily-roster', requireRole(['ADMIN', 'STAFF']), async (req: A
         title: staffProfiles.title,
         email: users.email,
         avatarUrl: users.avatarUrl,
+        gender: users.gender,
         isActive: staffProfiles.isActive,
       })
       .from(staffProfiles)
@@ -614,6 +623,7 @@ router.get('/admin/daily-roster', requireRole(['ADMIN', 'STAFF']), async (req: A
           title: stf.title,
           email: stf.email,
           avatarUrl: stf.avatarUrl,
+          gender: stf.gender,
           dayOfWeek,
           isWorkingDay,
           workingHours,

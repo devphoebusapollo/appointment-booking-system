@@ -13,6 +13,7 @@ import {
 import { DailyRosterResponse, SpecialistDayStatus } from '../../types/index.ts';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { useToast } from '../ui/Toast.tsx';
+import { getEffectiveAvatarUrl, getDefaultAvatarByGender } from '../../utils/avatar.ts';
 
 interface DailyRosterViewProps {
   initialDate?: string;
@@ -271,18 +272,15 @@ export const DailyRosterView: React.FC<DailyRosterViewProps> = ({ initialDate })
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   {/* Left: Specialist Profile Info */}
                   <div className="flex items-start gap-3.5 min-w-0">
-                    <div className="w-11 h-11 rounded-full bg-slate-200 overflow-hidden border border-slate-300 shrink-0 mt-0.5">
-                      {stf.avatarUrl ? (
-                        <img
-                          src={stf.avatarUrl}
-                          alt={stf.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center font-bold text-xs text-slate-700 bg-slate-100">
-                          {stf.name.slice(0, 2).toUpperCase()}
-                        </div>
-                      )}
+                    <div className="w-11 h-11 rounded-full bg-slate-100 overflow-hidden border border-slate-300 shrink-0 mt-0.5">
+                      <img
+                        src={getEffectiveAvatarUrl(stf.avatarUrl, stf.gender, stf.name)}
+                        alt={stf.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = getDefaultAvatarByGender(stf.gender, stf.name);
+                        }}
+                      />
                     </div>
 
                     <div className="min-w-0 space-y-1">
