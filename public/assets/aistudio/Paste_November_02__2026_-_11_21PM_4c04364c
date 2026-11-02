@@ -1,0 +1,1511 @@
+# MASTER DEVELOPMENT PROMPT
+## Build a Full-Stack Business Appointment Booking System
+
+### YOUR ROLE
+
+Act as a senior full-stack software engineer, SaaS product architect, UI/UX designer, and database engineer.
+
+Build a production-ready, modern Business Appointment Booking System using Next.js, TypeScript, PostgreSQL, Prisma, Tailwind CSS, and Auth.js.
+
+The application must be fully functional, not just a static prototype.
+
+Implement the complete frontend, backend, APIs, database, authentication, validation, appointment scheduling logic, role permissions, and responsive user interfaces.
+
+**Important development rules:**
+- Do not build mock dashboards with hardcoded statistics.
+- Do not create nonfunctional buttons or placeholder interactions.
+- All important user actions must connect to backend operations.
+- All application data must be persisted in PostgreSQL.
+- Use real database queries for dashboards, schedules, and bookings.
+- Follow clean code, SOLID principles, and modular architecture.
+- Keep frontend components separate from business logic.
+- Use reusable components.
+- Handle loading, empty, success, and error states.
+- Do not skip authentication, validation, or database conflict protection.
+- Do not stop after generating the UI. Build the working application.
+
+---
+
+# 1. PROJECT OVERVIEW
+
+**Application name:** BookFlow
+
+**Product type:** Business Appointment Management System
+
+**Primary goal:** Enable businesses to manage services, staff availability, customer appointments, and scheduling from a single platform.
+
+**Target users:**
+1. Business administrators
+2. Staff members
+3. Customers booking appointments
+
+**Initial architecture:** Single-business modular monolith with support for multiple staff members.
+
+The architecture should allow future expansion into a multi-business SaaS application without requiring an immediate microservices implementation.
+
+## Main functionality
+
+Customers must be able to:
+- Create an account and sign in.
+- Browse available services.
+- View service descriptions, duration, and prices.
+- Select an available staff member.
+- Select an appointment date.
+- View available time slots.
+- Book an appointment.
+- Receive booking confirmation.
+- View upcoming and past appointments.
+- Cancel or reschedule appointments.
+
+Staff members must be able to:
+- Sign in to a protected staff dashboard.
+- View their assigned appointments.
+- Manage weekly working hours.
+- Configure breaks and unavailable dates.
+- View daily, weekly, and monthly appointments.
+- Update permitted appointment statuses.
+
+Administrators must be able to:
+- Manage customers and staff.
+- Create, edit, activate, and deactivate services.
+- Assign services to staff.
+- View and manage all appointments.
+- Manage staff schedules and blocked times.
+- Create or reschedule appointments on behalf of customers.
+- View dashboard analytics.
+- Configure business scheduling settings.
+
+---
+
+# 2. TECHNOLOGY STACK
+
+Use the following technologies.
+
+| Component | Technology |
+|---|---|
+| Framework | Next.js App Router |
+| Language | TypeScript |
+| UI | React |
+| Styling | Tailwind CSS |
+| Components | shadcn/ui |
+| Icons | Lucide React |
+| Forms | React Hook Form |
+| Validation | Zod |
+| Database | PostgreSQL |
+| ORM | Prisma |
+| Authentication | Auth.js |
+| Date handling | date-fns + date-fns-tz |
+| Charts | Recharts |
+| Notifications | Email provider abstraction; Resend implementation |
+| Testing | Vitest and Playwright |
+| Deployment | Vercel and managed PostgreSQL |
+
+Use compatible, supported dependency versions. Follow current documentation when configuring Prisma, Next.js, and Auth.js.
+
+Use Prisma migration files for all database structure changes.
+
+Use a PostgreSQL driver adapter when required by the installed Prisma version.
+
+---
+
+# 3. APPLICATION ARCHITECTURE
+
+Use a modular monolith.
+
+The system should follow this flow:
+
+Frontend React Components
+↓
+Next.js API Route Handlers
+↓
+Authentication and Authorization
+↓
+Request Validation
+↓
+Application Service Layer
+↓
+Prisma ORM
+↓
+PostgreSQL Database
+
+Separate modules for:
+
+- Authentication
+- Users
+- Customers
+- Staff
+- Services
+- Availability
+- Appointments
+- Notifications
+- Analytics
+- Business settings
+
+Each module should clearly separate HTTP transport, request schemas, domain validation, business operations, and database access.
+
+Use centralized error handling and typed response structures.
+
+---
+
+# 4. EXACT UI DESIGN SYSTEM
+
+Create a modern, polished SaaS interface inspired by the usability and visual refinement of Linear, Calendly, Notion, and modern scheduling dashboards.
+
+Do not copy proprietary interface assets or reproduce an existing product exactly.
+
+The finished UI should look like a premium SaaS platform, not a generic admin template.
+
+## Visual direction
+
+**Design personality:**
+- Modern
+- Minimal
+- Professional
+- Calm
+- Organized
+- Premium
+- Friendly
+- Easy to navigate
+
+Use subtle borders, generous spacing, clear typography, restrained color accents, and smooth interactions.
+
+Avoid excessive gradients, glassmorphism, large shadows, and overly colorful dashboard cards.
+
+## Color palette
+
+**Light theme:**
+
+| Token | Hex |
+|---|---|
+| Primary | #2563EB |
+| Primary hover | #1D4ED8 |
+| Primary light | #EFF6FF |
+| Page background | #F8FAFC |
+| Surface | #FFFFFF |
+| Sidebar background | #FFFFFF |
+| Primary text | #0F172A |
+| Secondary text | #64748B |
+| Border | #E2E8F0 |
+| Success | #16A34A |
+| Warning | #F59E0B |
+| Error | #DC2626 |
+| Muted background | #F1F5F9 |
+
+**Dark theme:**
+
+| Token | Hex |
+|---|---|
+| Background | #0B1220 |
+| Surface | #111827 |
+| Elevated surface | #1F2937 |
+| Primary text | #F8FAFC |
+| Secondary text | #94A3B8 |
+| Border | #334155 |
+| Primary | #3B82F6 |
+
+Implement colors with CSS variables so themes can be changed without rewriting components.
+
+## Typography
+
+Use **Inter** as the default font.
+
+Typography specifications:
+- Main dashboard heading: 28px, 700 weight.
+- Page heading: 24px, 650–700 weight.
+- Section heading: 18px, 600 weight.
+- Card title: 16px, 600 weight.
+- Body text: 14px, 400 weight.
+- Small text: 12px, 400–500 weight.
+- Table header: 12px, 600 weight.
+- Button text: 14px, 600 weight.
+
+Use approximately 1.5 line-height for body text.
+
+## Layout specifications
+
+Desktop:
+- Sidebar width: 256px.
+- Collapsed sidebar width: 72px.
+- Top navigation height: 72px.
+- Main content padding: 32px.
+- Card radius: 12px.
+- Button radius: 8px.
+- Input height: 42px.
+- Standard spacing system: 4, 8, 12, 16, 24, 32, 48px.
+- Maximum dashboard content width: 1600px.
+
+Tablet:
+- Collapsible sidebar.
+- Content padding: 24px.
+- Two-column statistic cards where space permits.
+
+Mobile:
+- Sidebar becomes a navigation drawer.
+- Content padding: 16px.
+- Cards stack vertically.
+- Tables use horizontal scrolling or responsive card views.
+- Booking interface remains touch-friendly.
+- No unintended horizontal page scrolling.
+
+Use a consistent 1px border system, a light shadow only where necessary, and clear hover/focus states.
+
+## Components
+
+Build reusable:
+- Button
+- Icon button
+- Input
+- Textarea
+- Select
+- Combobox
+- Calendar date picker
+- Time-slot selector
+- Badge
+- Statistic card
+- Appointment card
+- Data table
+- Tabs
+- Modal/dialog
+- Confirmation dialog
+- Drawer
+- Toast
+- Skeleton loader
+- Empty state
+- Error state
+- Pagination
+- Breadcrumb
+- User avatar
+- Dropdown menu
+- Theme toggle
+
+All interactive elements require keyboard accessibility and visible focus indicators.
+
+---
+
+# 5. EXACT APPLICATION SHELL
+
+## Desktop layout
+
+Structure:
+
+LEFT SIDEBAR (256px)
+|
+MAIN CONTENT
+- TOP HEADER (72px)
+- PAGE CONTENT
+- PAGE-SPECIFIC COMPONENTS
+
+### Sidebar
+
+At the top:
+- Calendar icon with a blue rounded-square background.
+- Text: **BookFlow**
+- Small caption: Business Workspace
+
+Navigation links:
+
+**WORKSPACE**
+- Dashboard
+- Appointments
+- Calendar
+- Customers
+
+**MANAGEMENT**
+- Services
+- Staff
+- Availability
+
+**SYSTEM**
+- Analytics
+- Settings
+
+At the bottom:
+- Help & Support
+- User avatar
+- Full name
+- User role
+- Profile dropdown
+
+Sidebar interactions:
+- Active navigation item has a pale blue background and blue text.
+- Icons are 18–20px.
+- Collapsible on desktop.
+- Smooth 180ms transition.
+- Clearly label expanded navigation.
+- Mobile drawer closes after navigation.
+
+Hide navigation items that are unauthorized for a role.
+
+### Top header
+
+Left side:
+- Breadcrumb
+- Page title where appropriate
+
+Right side:
+- Global search
+- Notification icon
+- Theme toggle
+- User avatar
+
+The header should remain sticky while scrolling.
+
+---
+
+# 6. ADMIN DASHBOARD — EXACT UI
+
+Route: `/admin`
+
+Page header:
+
+**Good morning, Admin!**
+"Here's what's happening with your appointments today."
+
+Right-aligned primary action:
+**+ New Appointment**
+
+Below the header, display four KPI cards in one row on desktop.
+
+### KPI cards
+
+Card 1:
+- Label: Total Appointments
+- Value: Dynamic count
+- Icon: CalendarDays
+- Secondary information: Change versus previous comparable period
+
+Card 2:
+- Label: Today's Appointments
+- Value: Dynamic count
+- Icon: CalendarCheck
+- Secondary information: Today's date
+
+Card 3:
+- Label: Active Customers
+- Value: Dynamic count
+- Icon: Users
+- Secondary information: Number of active customer accounts
+
+Card 4:
+- Label: Completion Rate
+- Value: Dynamic percentage
+- Icon: TrendingUp
+- Secondary information: Completed versus eligible past appointments
+
+All metrics must be calculated from database records. Changes and rates must use documented formulas, not fabricated percentages.
+
+### Dashboard main content
+
+Two-column layout:
+
+Left column: 66%
+Right column: 34%
+
+**Left panel: Appointment Overview**
+
+A chart with:
+- Date range selector
+- Appointments grouped by date
+- Confirmed appointments
+- Completed appointments
+- Cancelled appointments
+- Interactive tooltips
+- Proper loading and empty states
+
+Default date range: Last 7 days.
+
+**Right panel: Upcoming Appointments**
+
+Display the next five upcoming appointments.
+
+Each item contains:
+- Customer avatar or initials
+- Customer name
+- Service name
+- Appointment time
+- Staff name
+- Status badge
+
+Provide a "View All" link.
+
+### Bottom section
+
+Full-width "Recent Appointments" table.
+
+Columns:
+- Customer
+- Service
+- Staff
+- Date
+- Time
+- Status
+- Actions
+
+Include search, status filtering, sorting, pagination, and row actions.
+
+---
+
+# 7. APPOINTMENTS MANAGEMENT PAGE
+
+Route: `/admin/appointments`
+
+Header:
+**Appointments**
+
+Subtitle:
+"Manage and track all customer bookings."
+
+Right-side button:
+**+ New Appointment**
+
+Directly below:
+- Search appointments
+- Date range filter
+- Status filter
+- Service filter
+- Staff filter
+- Reset filters button
+
+### Appointment table
+
+Columns:
+1. Customer
+2. Service
+3. Staff
+4. Date
+5. Time
+6. Duration
+7. Status
+8. Actions
+
+Appointment status colors:
+- Pending: Amber
+- Confirmed: Blue
+- Completed: Green
+- Cancelled: Gray
+- No-show: Red
+
+Actions:
+- View details
+- Reschedule
+- Cancel
+- Mark completed
+- Mark no-show, where permitted
+
+The action menu must enforce role permissions and valid status transitions.
+
+### Appointment details modal
+
+Use a right-side drawer approximately 480px wide on desktop.
+
+Display:
+- Customer information
+- Appointment ID
+- Service
+- Assigned staff
+- Date
+- Start and end time
+- Duration
+- Status
+- Customer notes
+- Created timestamp
+- Last updated timestamp
+
+At the bottom:
+- Reschedule
+- Cancel Appointment
+- Close
+
+Add destructive-action confirmation dialogs.
+
+---
+
+# 8. CALENDAR MANAGEMENT PAGE
+
+Route: `/admin/calendar`
+
+Create a polished calendar similar in usability to business scheduling software.
+
+### Header
+
+Title: **Calendar**
+
+Controls:
+- Today
+- Previous
+- Next
+- Date selector
+- Day / Week / Month segmented toggle
+- Staff filter
+- + New Appointment
+
+### Calendar requirements
+
+Day view:
+- Vertical hourly timeline.
+- Staff appointments placed at their corresponding times.
+
+Week view:
+- Seven columns.
+- Hourly rows.
+- Booking cards positioned according to duration.
+
+Month view:
+- Traditional month calendar grid.
+- Appointment count indicators.
+- Clicking a day opens its appointments.
+
+Appointment cards display:
+- Customer name
+- Service
+- Time
+- Status color
+
+Clicking an appointment opens the appointment details drawer.
+
+Use the selected display time zone consistently.
+
+Avoid collisions or incorrect appointment placement.
+
+---
+
+# 9. CUSTOMER BOOKING PAGE — EXACT UI
+
+Public booking route: `/book`
+
+This must look like a modern, premium appointment booking experience.
+
+Desktop layout:
+- Centered white booking card.
+- Max width: 1080px.
+- Two-column content.
+- Left side: 35%.
+- Right side: 65%.
+- Card border radius: 16px.
+- Subtle border and shadow.
+- Page background: #F8FAFC.
+
+### Left information panel
+
+Display:
+- Business logo placeholder configurable in settings
+- Business name
+- Heading: **Book an Appointment**
+- Short description: "Choose a service and find a time that works for you."
+- Location or online meeting information
+- Business contact information
+- Booking policy summary
+
+Below, show the user's current selections.
+
+### Right booking panel
+
+Use a step-based booking experience.
+
+Step indicator at top:
+1. Service
+2. Staff
+3. Date & Time
+4. Details
+5. Confirmation
+
+Use an accessible stepper with numbered circles and connecting lines.
+
+#### Step 1 — Choose a service
+
+Show selectable service cards.
+
+Each card includes:
+- Service name
+- Short description
+- Duration
+- Price
+- Chevron or selection indicator
+
+Selected state:
+- Blue 1px border
+- Pale blue background
+- Check icon
+
+Only active services should appear.
+
+#### Step 2 — Choose staff
+
+Display selectable staff cards.
+
+Each card:
+- Staff avatar
+- Full name
+- Services supported
+- Available status indicator if accurate
+
+Support an optional "Any available staff" choice.
+
+#### Step 3 — Select date and time
+
+Two-column arrangement:
+- Calendar on left
+- Available times on right
+
+Calendar:
+- Current month and year
+- Previous/next month
+- Unavailable dates visually disabled
+- Selected day highlighted in blue
+
+Time slots:
+- Responsive grid
+- 42px minimum height
+- Blue selected state
+- Clear available/unavailable distinction
+
+Only return valid slots from the backend.
+
+Display time zone clearly, for example:
+"All times shown in Asia/Manila."
+
+Allow navigation between steps while retaining selected data where valid.
+
+#### Step 4 — Customer details
+
+Form:
+- Full name
+- Email
+- Phone number (optional)
+- Notes or special requests (optional)
+- Required acceptance of booking policies
+
+If signed in, prefill data from the profile.
+
+Show appointment summary:
+- Service
+- Staff
+- Date
+- Start and end time
+- Duration
+- Price
+
+Primary CTA:
+**Confirm Appointment**
+
+The button must show a loading state during submission and prevent accidental duplicate submissions.
+
+#### Step 5 — Confirmation
+
+Success icon in a green circle.
+
+Heading:
+**Your appointment is confirmed!**
+
+Description:
+"We've saved your appointment and sent a confirmation to your email."
+
+Show a booking summary card.
+
+Actions:
+- View My Appointments
+- Book Another Appointment
+
+If email delivery is asynchronous, do not claim the email was sent until delivery is confirmed. Use accurate messaging such as "A confirmation email is being prepared" when appropriate.
+
+If a slot becomes unavailable during submission, show an informative error and return the user to time selection.
+
+---
+
+# 10. CUSTOMER DASHBOARD
+
+Route: `/my-appointments`
+
+Header:
+**My Appointments**
+
+Tabs:
+- Upcoming
+- Past
+- Cancelled
+
+Display appointment cards containing:
+- Service
+- Assigned staff
+- Date
+- Time
+- Status
+- Price
+- Reschedule button
+- Cancel button
+
+Show cancellation and rescheduling controls only when allowed by business policy.
+
+Add an empty state:
+
+"No appointments yet."
+
+CTA:
+**Book Your First Appointment**
+
+Customers must never be able to view or modify other customers' bookings.
+
+---
+
+# 11. STAFF DASHBOARD
+
+Route: `/staff`
+
+Header:
+**My Schedule**
+
+Display:
+- Today's appointments
+- Upcoming appointments
+- Calendar
+- Working hours
+- Time off
+
+### Staff availability management
+
+Weekly schedule editor:
+
+Rows:
+- Sunday
+- Monday
+- Tuesday
+- Wednesday
+- Thursday
+- Friday
+- Saturday
+
+Each row contains:
+- Day name
+- Available toggle
+- Start time
+- End time
+- Add interval button
+
+Allow split shifts such as:
+- 9:00 AM–12:00 PM
+- 1:00 PM–5:00 PM
+
+Prevent overlapping intervals.
+
+### Time off
+
+Allow staff to:
+- Block a specific date.
+- Block a time range.
+- Add a reason.
+- View and remove future blocks.
+
+Validate blocked times against existing confirmed appointments. Do not silently invalidate bookings.
+
+---
+
+# 12. STAFF MANAGEMENT PAGE
+
+Route: `/admin/staff`
+
+Display staff cards in a responsive grid.
+
+Each staff card:
+- Avatar
+- Name
+- Email
+- Active/inactive status
+- Assigned services
+- Number of upcoming appointments
+- View schedule action
+- Edit staff action
+
+Admin functions:
+- Create staff accounts.
+- Update staff details.
+- Activate/deactivate staff.
+- Assign or remove services.
+- Configure schedules.
+
+Do not allow deletion of staff data in ways that damage historical appointment records.
+
+---
+
+# 13. SERVICES MANAGEMENT PAGE
+
+Route: `/admin/services`
+
+Header:
+**Services**
+
+Subtitle:
+"Manage the services customers can book."
+
+Button:
+**+ Add Service**
+
+Display services using a table or clean card grid.
+
+Each service:
+- Name
+- Description
+- Duration
+- Price
+- Assigned staff count
+- Active/inactive status
+- Edit
+- Deactivate
+
+Service form fields:
+- Service name
+- Description
+- Duration in minutes
+- Price
+- Active status
+- Assigned staff
+
+Validate positive duration and nonnegative prices.
+
+Do not allow invalid service data.
+
+---
+
+# 14. DATABASE REQUIREMENTS
+
+Use PostgreSQL with Prisma.
+
+Implement these domain models:
+
+### User
+- id: UUID
+- name
+- email: unique
+- phone
+- role: ADMIN | STAFF | CUSTOMER
+- createdAt
+- updatedAt
+
+### StaffProfile
+- id: UUID
+- userId: unique foreign key
+- timezone
+- isActive
+
+### Service
+- id: UUID
+- name
+- description
+- durationMinutes
+- price: Decimal
+- isActive
+
+### StaffService
+- staffId
+- serviceId
+- Composite unique primary key
+
+### AvailabilityRule
+- id
+- staffId
+- dayOfWeek
+- startMinute
+- endMinute
+- isActive
+
+Support multiple non-overlapping availability intervals per day.
+
+### BlockedTime
+- id
+- staffId
+- startAt
+- endAt
+- reason
+
+### Appointment
+- id
+- customerId
+- staffId
+- serviceId
+- startAt
+- endAt
+- status
+- notes
+- createdAt
+- updatedAt
+
+Status values:
+- PENDING
+- CONFIRMED
+- CANCELLED
+- COMPLETED
+- NO_SHOW
+
+### NotificationOutbox
+- id
+- appointmentId
+- type
+- recipient
+- status
+- attempts
+- availableAt
+- sentAt
+- createdAt
+
+Also implement the models required by the selected Auth.js authentication strategy.
+
+Use UUID primary keys, proper foreign keys, indexes, and database constraints.
+
+## Database safety requirements
+
+- Store appointment instants in UTC-compatible timestamp fields.
+- Use IANA time zones for staff schedules.
+- Validate all appointment time ranges.
+- Prevent overlapping active appointments for the same staff member.
+- Implement a PostgreSQL GiST exclusion constraint using `tstzrange` and `btree_gist`.
+- Use half-open time intervals `[)`.
+- Allow adjacent bookings.
+- Keep cancelled appointment history.
+- Use transactional database writes.
+- Preserve referential integrity.
+- Do not rely solely on frontend validation.
+
+Support migrations and seed scripts.
+
+---
+
+# 15. BOOKING ENGINE
+
+The availability and booking engine is the most important backend feature.
+
+### Availability calculation
+
+Given:
+- Staff member
+- Service
+- Date
+- Working hours
+- Existing appointments
+- Blocked intervals
+- Booking policies
+
+Return only valid available start times.
+
+The algorithm must:
+
+1. Resolve the staff member's local date and time zone.
+2. Load active weekly availability intervals.
+3. Generate candidate start times using the configured interval.
+4. Calculate end times from service duration.
+5. Reject slots outside working hours.
+6. Reject slots overlapping active appointments.
+7. Reject slots overlapping blocked times.
+8. Reject slots in the past.
+9. Enforce minimum booking notice.
+10. Enforce maximum advance booking window.
+11. Handle daylight-saving time correctly.
+12. Return available slots in ascending order.
+
+Default slot increment: 30 minutes.
+
+### Booking creation
+
+When a user confirms:
+
+1. Authenticate the user.
+2. Validate the request using Zod.
+3. Fetch the selected service and staff.
+4. Confirm the service is active.
+5. Confirm staff can perform the service.
+6. Calculate the appointment end time server-side.
+7. Validate availability.
+8. Start a database transaction.
+9. Insert the appointment.
+10. Reject database overlap conflicts.
+11. Insert a notification outbox entry.
+12. Commit the transaction.
+13. Return the appointment.
+
+Return HTTP 409 if another booking claims the slot.
+
+For concurrency correctness, coordinate schedule mutations and booking operations transactionally. Use PostgreSQL constraints as the final appointment-overlap guard.
+
+Implement idempotency for booking submissions.
+
+### Cancellation
+
+- Authenticate and authorize the requester.
+- Check cancellation policy.
+- Validate the appointment status.
+- Update status to CANCELLED.
+- Preserve the appointment record.
+- Queue a cancellation notification.
+- Release the time slot for future booking.
+
+### Rescheduling
+
+- Validate ownership or admin/staff authorization.
+- Apply business rescheduling policy.
+- Recalculate availability.
+- Update the existing appointment in a transaction.
+- Reject conflicts safely.
+- Queue a rescheduling notification.
+
+---
+
+# 16. REST API ENDPOINTS
+
+Use `/api/v1`.
+
+### Authentication
+- Configure Auth.js routes and sessions.
+- Provide a secure customer registration flow.
+- Provision staff/admin accounts through authorized administrative actions.
+
+### Services
+- GET `/api/v1/services`
+- POST `/api/v1/services`
+- GET `/api/v1/services/:id`
+- PATCH `/api/v1/services/:id`
+
+### Staff
+- GET `/api/v1/staff`
+- POST `/api/v1/staff`
+- GET `/api/v1/staff/:id`
+- PATCH `/api/v1/staff/:id`
+
+### Availability
+- GET `/api/v1/availability`
+- GET `/api/v1/staff/:id/availability`
+- PUT `/api/v1/staff/me/schedule`
+- POST `/api/v1/staff/me/blocked-times`
+- DELETE `/api/v1/staff/me/blocked-times/:id`
+
+### Appointments
+- GET `/api/v1/appointments`
+- POST `/api/v1/appointments`
+- GET `/api/v1/appointments/:id`
+- PATCH `/api/v1/appointments/:id`
+- POST `/api/v1/appointments/:id/cancel`
+
+### Analytics
+- GET `/api/v1/admin/overview`
+- GET `/api/v1/admin/analytics`
+
+Use structured JSON responses.
+
+Success response:
+```json
+{
+  "success": true,
+  "data": {}
+}
+```
+
+Error response:
+```json
+{
+  "success": false,
+  "error": {
+    "code": "SLOT_UNAVAILABLE",
+    "message": "This time slot is no longer available."
+  }
+}
+```
+
+Implement proper HTTP status codes and do not expose sensitive error details to clients.
+
+---
+
+# 17. AUTHENTICATION AND SECURITY
+
+Use Auth.js with secure sessions.
+
+Support:
+- Customer registration
+- Login
+- Logout
+- Password reset if using password credentials
+- Protected routes
+- Server-side role authorization
+- Secure password hashing if using credentials authentication
+- Restricted admin and staff account provisioning
+
+Roles:
+- ADMIN
+- STAFF
+- CUSTOMER
+
+Permissions:
+- Customers access only their own appointments.
+- Staff access only their assigned bookings and permitted schedule settings.
+- Administrators can access business-wide data.
+
+Security requirements:
+- Validate every API request.
+- Implement rate limiting.
+- Protect against cross-site request forgery where applicable.
+- Use secure cookies.
+- Prevent horizontal privilege escalation.
+- Do not expose internal database errors.
+- Protect sensitive customer information.
+- Never trust client-supplied role, customer ID, price, or appointment duration.
+- Never allow public users to self-register as admin or staff.
+- Validate all state transitions.
+
+---
+
+# 18. NOTIFICATIONS
+
+Implement an email-notification abstraction.
+
+Default implementation: Resend.
+
+Notification events:
+- Booking confirmed
+- Booking cancelled
+- Appointment rescheduled
+- Appointment reminder
+
+Create clean responsive HTML email templates.
+
+Use an outbox worker for reliable asynchronous delivery.
+
+Store notification status and retry attempts.
+
+Do not send emails from inside a database transaction.
+
+For scheduled reminders, use a reliable server-side worker or scheduled job system. Do not depend on an open browser or arbitrary in-memory timers.
+
+Use idempotent delivery logic to prevent duplicate notifications where possible.
+
+If the email provider is not configured, keep bookings functional and show accurate email-delivery status.
+
+---
+
+# 19. DASHBOARD ANALYTICS
+
+Calculate:
+- Total appointments
+- Today's appointments
+- Upcoming appointments
+- Completed appointments
+- Cancelled appointments
+- No-show appointments
+- Completion rate
+- Bookings by date
+- Appointments by service
+- Appointments by staff
+- Active customers
+
+Use real PostgreSQL data.
+
+Document the date ranges and formulas.
+
+Display empty states when there is insufficient data.
+
+Do not fabricate positive growth indicators.
+
+---
+
+# 20. RESPONSIVE DESIGN
+
+Desktop:
+- Persistent collapsible sidebar
+- Multi-column dashboard layout
+- Full calendar interface
+- Appointment table
+- Right-side detail drawer
+
+Tablet:
+- Collapsed navigation
+- Two-column dashboard cards
+- Simplified table controls
+- Responsive calendar
+
+Mobile:
+- Hamburger navigation
+- Single-column dashboards
+- Full-width booking steps
+- Touch-friendly time-slot buttons
+- Scrollable calendar where appropriate
+- Bottom sheets or full-screen detail drawers
+
+Maintain consistency across screen sizes.
+
+---
+
+# 21. LOADING, EMPTY, AND ERROR STATES
+
+Every data-driven screen must include meaningful states.
+
+Examples:
+
+**Appointments empty:**
+"No appointments found."
+"New bookings will appear here."
+
+**Availability empty:**
+"No available times for this date."
+"Try another day or staff member."
+
+**Service list empty:**
+"No services are currently available."
+
+**Error:**
+"Something went wrong while loading appointments."
+Button: Retry
+
+**Loading:**
+Use skeleton loaders matching the final component structure.
+
+Use toast notifications for successful actions and non-blocking errors.
+
+Use confirmation dialogs for destructive actions.
+
+---
+
+# 22. PROJECT FOLDER STRUCTURE
+
+Use this structure:
+
+```text
+src/
+├── app/
+│   ├── (auth)/
+│   ├── (public)/
+│   ├── (customer)/
+│   ├── (staff)/
+│   ├── (admin)/
+│   └── api/
+│       └── v1/
+├── components/
+│   ├── ui/
+│   ├── dashboard/
+│   ├── booking/
+│   ├── calendar/
+│   └── forms/
+├── modules/
+│   ├── auth/
+│   ├── users/
+│   ├── services/
+│   ├── staff/
+│   ├── availability/
+│   ├── appointments/
+│   ├── notifications/
+│   └── analytics/
+├── lib/
+├── hooks/
+├── types/
+└── generated/
+    └── prisma/
+
+prisma/
+├── schema.prisma
+├── migrations/
+└── seed.ts
+
+tests/
+├── unit/
+├── integration/
+└── e2e/
+```
+
+---
+
+# 23. DATABASE SEEDING
+
+Create repeatable seed data for local development:
+
+- 1 admin account
+- 3 staff accounts
+- 5 customer accounts
+- 4 active services
+- Realistic weekly staff schedules
+- Sample blocked periods
+- Sample past and future appointments
+
+Use a separate, documented development seeding command.
+
+Do not seed default admin credentials into production.
+
+---
+
+# 24. AUTOMATED TESTING
+
+Write tests for:
+
+Authentication and authorization:
+- Customers cannot access admin routes.
+- Staff cannot view unrelated appointments.
+- Customers cannot modify another user's bookings.
+- Public registration cannot create privileged roles.
+
+Availability:
+- Available slot generation.
+- Non-working days.
+- Breaks and blocked periods.
+- Service duration boundaries.
+- Time-zone transitions.
+
+Appointments:
+- Successful booking.
+- Double-booking rejection.
+- Adjacent appointments.
+- Concurrent booking requests.
+- Cancellation.
+- Rescheduling.
+- Invalid status transitions.
+- Booking after cancellation.
+
+Admin:
+- Service CRUD operations.
+- Staff assignments.
+- Dashboard counts.
+
+UI:
+- Complete booking flow.
+- Login and logout.
+- Appointment management.
+- Form validation.
+- Mobile navigation.
+
+Use Vitest for unit/integration testing and Playwright for end-to-end flows.
+
+---
+
+# 25. DEVELOPMENT IMPLEMENTATION ORDER
+
+Build the project in this order.
+
+### Phase 1 — Project foundation
+
+1. Initialize Next.js and TypeScript.
+2. Install Tailwind CSS and shadcn/ui.
+3. Configure the design system.
+4. Configure PostgreSQL.
+5. Configure Prisma.
+6. Create database schema and migrations.
+7. Seed development data.
+8. Implement Auth.js authentication and role authorization.
+9. Build the reusable application shell.
+
+### Phase 2 — Core backend
+
+1. Build services API.
+2. Build staff API.
+3. Build availability schedules.
+4. Implement blocked time management.
+5. Build availability calculation.
+6. Implement transaction-safe booking.
+7. Implement cancellation and rescheduling.
+8. Write concurrency tests.
+
+### Phase 3 — Customer experience
+
+1. Build public booking page.
+2. Implement step-by-step service selection.
+3. Build staff selection.
+4. Build date and time selector.
+5. Implement customer details form.
+6. Connect booking submission.
+7. Build confirmation screen.
+8. Build customer appointment dashboard.
+
+### Phase 4 — Staff and admin interfaces
+
+1. Build admin dashboard.
+2. Build appointment management table.
+3. Build calendar views.
+4. Build services management.
+5. Build staff management.
+6. Build working-hours editor.
+7. Build time-off management.
+8. Implement reports and analytics.
+
+### Phase 5 — Notifications and polish
+
+1. Implement notification outbox.
+2. Connect email provider.
+3. Build email templates.
+4. Add reminder scheduling.
+5. Implement loading/error/empty states.
+6. Optimize responsive layouts.
+7. Improve accessibility.
+8. Complete automated testing.
+
+### Phase 6 — Deployment
+
+1. Configure production environment variables.
+2. Set up managed PostgreSQL.
+3. Apply production database migrations.
+4. Deploy the Next.js application.
+5. Configure the email worker and scheduler.
+6. Verify authentication and booking behavior.
+7. Verify database backups and logging.
+8. Perform security and regression checks.
+
+---
+
+# 26. ACCEPTANCE CRITERIA
+
+The application is complete only when:
+
+- Users can register and log in securely.
+- Role permissions are enforced on the server.
+- Administrators can create staff and services.
+- Staff can configure their schedules.
+- Customers can see real available appointment slots.
+- Customers can book appointments.
+- Two customers cannot successfully reserve overlapping times with the same staff member.
+- Customers can view, cancel, and reschedule permitted appointments.
+- Administrators can manage all bookings.
+- Calendar events display at the correct time.
+- Dashboard statistics reflect real database data.
+- Data survives server restarts.
+- The app works on desktop, tablet, and mobile.
+- Error messages are clear.
+- No critical buttons are nonfunctional.
+- Tests pass.
+- The project can be deployed using documented steps.
+
+---
+
+# 27. FINAL DELIVERY REQUIREMENTS
+
+Provide:
+
+1. Full working Next.js project.
+2. PostgreSQL/Prisma database schema.
+3. Database migrations, including exclusion constraints.
+4. Seed script.
+5. Authentication and authorization.
+6. All required APIs.
+7. Fully connected frontend screens.
+8. Responsive design system.
+9. Unit, integration, and end-to-end tests.
+10. `.env.example`.
+11. `README.md` with installation instructions.
+12. Local development commands.
+13. Production deployment instructions.
+14. A summary of completed features and any remaining limitations.
+
+Include setup instructions that allow another developer to clone the project, configure environment variables, migrate the database, seed development data, and run it.
+
+Do not claim tests passed unless they were actually executed.
+
+Do not claim integrations work unless they were tested with real configurations.
+
+Do not report a feature complete if it is only visually mocked.
+
+---
+
+# FINAL INSTRUCTIONS
+
+Start by reviewing the entire specification and establishing the project structure, database schema, route architecture, and shared design system.
+
+Then implement the application feature by feature.
+
+Create files directly in the project workspace when the development environment supports it.
+
+Prioritize working booking logic, data integrity, authentication, and security before optional visual enhancements.
+
+Use the exact specified layout measurements, typography, colors, and components as the UI acceptance baseline.
+
+Make the final application feel like a professionally designed SaaS booking platform.
+
+**Build BookFlow as a functional end-to-end application, not a concept, mockup, or frontend-only demo.**
